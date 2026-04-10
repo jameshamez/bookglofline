@@ -48,7 +48,8 @@ npm run dev
 
 ## Deploy บน Vercel
 
-- เพิ่ม `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `LINE_CLIENT_ID`, `LINE_CLIENT_SECRET` ใน Project Settings
+- สำหรับโหมด mock ตอนนี้ไม่ต้องตั้ง `DATABASE_URL` แล้ว เพราะ Prisma ถูกล็อกให้ใช้ SQLite file ในโปรเจกต์
+- ให้ตั้ง `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `LINE_CLIENT_ID`, `LINE_CLIENT_SECRET` ใน Project Settings
 - โปรเจกต์มี `postinstall: prisma generate` แล้ว เพื่อให้ Vercel generate Prisma Client ก่อน build
 - ถ้า deploy production จริง ไม่ควรใช้ SQLite (`file:./dev.db`) เพราะ filesystem บน Vercel ไม่ถาวร
 - แนะนำให้เปลี่ยนไปใช้ Postgres เช่น Vercel Postgres, Neon หรือ Supabase
