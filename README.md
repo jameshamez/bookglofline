@@ -46,6 +46,13 @@ npm run db:seed
 npm run dev
 ```
 
+## Deploy บน Vercel
+
+- เพิ่ม `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `LINE_CLIENT_ID`, `LINE_CLIENT_SECRET` ใน Project Settings
+- โปรเจกต์มี `postinstall: prisma generate` แล้ว เพื่อให้ Vercel generate Prisma Client ก่อน build
+- ถ้า deploy production จริง ไม่ควรใช้ SQLite (`file:./dev.db`) เพราะ filesystem บน Vercel ไม่ถาวร
+- แนะนำให้เปลี่ยนไปใช้ Postgres เช่น Vercel Postgres, Neon หรือ Supabase
+
 ## การตั้งค่า LINE Login
 
 ใส่ค่าต่อไปนี้ใน `.env`
