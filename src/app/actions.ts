@@ -34,6 +34,13 @@ export async function createBookingAction(
   _: BookingActionState,
   formData: FormData,
 ): Promise<BookingActionState> {
+  if (process.env.VERCEL) {
+    return {
+      status: "error",
+      message: "Demo mode on Vercel does not allow live bookings yet.",
+    };
+  }
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
@@ -120,6 +127,10 @@ export async function createBookingAction(
 }
 
 export async function cancelBookingAction(formData: FormData) {
+  if (process.env.VERCEL) {
+    return;
+  }
+
   const session = await getServerSession(authOptions);
   const bookingId = String(formData.get("bookingId") ?? "");
 

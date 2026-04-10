@@ -5,8 +5,8 @@ import { getServerSession } from "next-auth";
 import { cancelBookingAction } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { authOptions } from "@/lib/auth";
+import { getUserBookings } from "@/lib/data";
 import { formatCurrency, formatTeeTime } from "@/lib/format";
-import { prisma } from "@/lib/prisma";
 
 export default async function MyBookingsPage() {
   const session = await getServerSession(authOptions);
@@ -33,21 +33,7 @@ export default async function MyBookingsPage() {
     );
   }
 
-  const bookings = await prisma.booking.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    include: {
-      teeTime: {
-        include: {
-          course: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const { bookings, usingMockData } = await getUserBookings(session.user.id);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 lg:px-10 lg:py-14">
@@ -61,6 +47,11 @@ export default async function MyBookingsPage() {
         <p className="text-base leading-8 text-[--color-text-soft]">
           ดูสถานะการจอง, เลข booking code และยกเลิกการจองได้จากหน้านี้
         </p>
+        {usingMockData ? (
+          <p className="text-sm font-medium text-amber-800">
+            Demo mode is active. Live bookings are temporarily unavailable on Vercel.
+          </p>
+        ) : null}
       </div>
 
       {bookings.length === 0 ? (

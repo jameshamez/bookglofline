@@ -11,40 +11,18 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { BookingPanel } from "@/components/booking-panel";
 import { authOptions, isLineAuthConfigured } from "@/lib/auth";
+import { getHomepageData } from "@/lib/data";
 import { formatCurrency, formatDateBadge, formatTeeTime } from "@/lib/format";
-import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
-  const [session, courses, teeTimes] = await Promise.all([
+  const [session, homepageData] = await Promise.all([
     getServerSession(authOptions),
-    prisma.golfCourse.findMany({
-      include: {
-        _count: {
-          select: {
-            teeTimes: true,
-          },
-        },
-      },
-      orderBy: {
-        name: "asc",
-      },
-    }),
-    prisma.teeTime.findMany({
-      where: {
-        status: {
-          in: ["OPEN", "LIMITED"],
-        },
-      },
-      include: {
-        course: true,
-      },
-      orderBy: [{ dateTime: "asc" }, { price: "asc" }],
-      take: 12,
-    }),
+    getHomepageData(),
   ]);
+  const { courses, teeTimes, usingMockData } = homepageData;
 
   const nextOpenSlot = teeTimes[0];
-  const lineReady = isLineAuthConfigured;
+  const lineReady = isLineAuthConfigured && !usingMockData;
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-14 px-6 py-10 lg:px-10 lg:py-14">
@@ -156,6 +134,12 @@ export default async function Home() {
           )}
         </aside>
       </section>
+
+      {usingMockData ? (
+        <section className="rounded-[28px] border border-sky-200 bg-sky-50 px-6 py-5 text-sky-900">
+          Demo mode is active on Vercel. The page is showing mock tee times because the live database is not available yet.
+        </section>
+      ) : null}
 
       {!lineReady ? (
         <section className="rounded-[28px] border border-amber-200 bg-amber-50 px-6 py-5 text-amber-900">
