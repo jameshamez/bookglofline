@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(cuid())
+  lineUserId String    @unique
+  name       String?
+  email      String?   @unique
+  image      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  bookings   Booking[]
+}
+
+model GolfCourse {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  location    String
+  description String
+  coverImage  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  teeTimes    TeeTime[]
+}
+
+model TeeTime {
+  id             String        @id @default(cuid())
+  courseId       String
+  dateTime       DateTime
+  holes          Int           @default(18)
+  price          Int
+  flightSize     Int           @default(4)
+  availableSlots Int
+  status         TeeTimeStatus @default(OPEN)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  course         GolfCourse    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+
+  @@index([dateTime, status])
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  bookingCode String        @unique
+  userId      String
+  teeTimeId   String
+  playerCount Int
+  note        String?
+  totalPrice  Int
+  status      BookingStatus @default(CONFIRMED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teeTime     TeeTime       @relation(fields: [teeTimeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+enum TeeTimeStatus {
+  OPEN
+  LIMITED
+  FULL
+  CLOSED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
