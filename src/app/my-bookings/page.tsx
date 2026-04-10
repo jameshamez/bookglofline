@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { BookingStatus } from "@prisma/client";
 import { CalendarDays, ReceiptText, Users } from "lucide-react";
-import { getServerSession } from "next-auth";
 import { cancelBookingAction } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
-import { authOptions } from "@/lib/auth";
+import { getSafeServerSession } from "@/lib/auth";
 import { getUserBookings } from "@/lib/data";
 import { formatCurrency, formatTeeTime } from "@/lib/format";
 
 export default async function MyBookingsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getSafeServerSession();
 
   if (!session?.user?.id) {
     return (

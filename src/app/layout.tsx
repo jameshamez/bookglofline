@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Bai_Jamjuree, Noto_Sans_Thai } from "next/font/google";
-import { getServerSession } from "next-auth";
 import { SiteHeader } from "@/components/site-header";
-import { authOptions, isLineAuthConfigured } from "@/lib/auth";
+import { getSafeServerSession, isLineAuthConfigured } from "@/lib/auth";
 import "./globals.css";
 
 const bodyFont = Noto_Sans_Thai({
@@ -27,7 +26,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const session = await getSafeServerSession();
 
   return (
     <html

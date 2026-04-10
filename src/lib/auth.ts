@@ -1,4 +1,5 @@
 import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { OAuthConfig } from "next-auth/providers/oauth";
 import { prisma } from "@/lib/prisma";
@@ -39,18 +40,22 @@ async function ensureUser(token: JWT) {
     return token;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { lineUserId: token.lineUserId },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { lineUserId: token.lineUserId },
+    });
 
-  if (!user) {
+    if (!user) {
+      return token;
+    }
+
+    token.userId = user.id;
+    token.name = user.name ?? token.name;
+    token.email = user.email ?? token.email;
+    token.picture = user.image ?? token.picture;
+  } catch {
     return token;
   }
-
-  token.userId = user.id;
-  token.name = user.name ?? token.name;
-  token.email = user.email ?? token.email;
-  token.picture = user.image ?? token.picture;
 
   return token;
 }
@@ -72,20 +77,24 @@ export const authOptions: NextAuthOptions = {
         return false;
       }
 
-      await prisma.user.upsert({
-        where: { lineUserId: lineProfile.sub },
-        update: {
-          name: user.name ?? lineProfile.name ?? "LINE Member",
-          email: user.email ?? lineProfile.email ?? null,
-          image: user.image ?? lineProfile.picture ?? null,
-        },
-        create: {
-          lineUserId: lineProfile.sub,
-          name: user.name ?? lineProfile.name ?? "LINE Member",
-          email: user.email ?? lineProfile.email ?? null,
-          image: user.image ?? lineProfile.picture ?? null,
-        },
-      });
+      try {
+        await prisma.user.upsert({
+          where: { lineUserId: lineProfile.sub },
+          update: {
+            name: user.name ?? lineProfile.name ?? "LINE Member",
+            email: user.email ?? lineProfile.email ?? null,
+            image: user.image ?? lineProfile.picture ?? null,
+          },
+          create: {
+            lineUserId: lineProfile.sub,
+            name: user.name ?? lineProfile.name ?? "LINE Member",
+            email: user.email ?? lineProfile.email ?? null,
+            image: user.image ?? lineProfile.picture ?? null,
+          },
+        });
+      } catch {
+        return false;
+      }
 
       return true;
     },
@@ -114,3 +123,15 @@ export const isLineAuthConfigured = Boolean(
     process.env.LINE_CLIENT_ID &&
     process.env.LINE_CLIENT_SECRET,
 );
+
+export async function getSafeServerSession() {
+  if (!process.env.NEXTAUTH_SECRET) {
+    return null;
+  }
+
+  try {
+    return await getServerSession(authOptions);
+  } catch {
+    return null;
+  }
+}

@@ -2,9 +2,8 @@
 
 import { BookingStatus, TeeTimeStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
+import { getSafeServerSession } from "@/lib/auth";
 import { bookingCodePrefix } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 
@@ -41,7 +40,7 @@ export async function createBookingAction(
     };
   }
 
-  const session = await getServerSession(authOptions);
+  const session = await getSafeServerSession();
 
   if (!session?.user?.id) {
     return {
@@ -131,7 +130,7 @@ export async function cancelBookingAction(formData: FormData) {
     return;
   }
 
-  const session = await getServerSession(authOptions);
+  const session = await getSafeServerSession();
   const bookingId = String(formData.get("bookingId") ?? "");
 
   if (!session?.user?.id || !bookingId) {

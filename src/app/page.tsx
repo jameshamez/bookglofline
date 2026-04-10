@@ -8,15 +8,14 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { getServerSession } from "next-auth";
 import { BookingPanel } from "@/components/booking-panel";
-import { authOptions, isLineAuthConfigured } from "@/lib/auth";
+import { getSafeServerSession, isLineAuthConfigured } from "@/lib/auth";
 import { getHomepageData } from "@/lib/data";
 import { formatCurrency, formatDateBadge, formatTeeTime } from "@/lib/format";
 
 export default async function Home() {
   const [session, homepageData] = await Promise.all([
-    getServerSession(authOptions),
+    getSafeServerSession(),
     getHomepageData(),
   ]);
   const { courses, teeTimes, usingMockData } = homepageData;
